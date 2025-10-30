@@ -1,171 +1,201 @@
-# Predictive Lead Scoring for Term Deposits with Explainable AI
+# Predictive Lead Scoring for Term Deposit Subscriptions: End-to-End
 
-[![Python Version](https://img.shields.io/badge/Python-3.10%2B-blue.svg)](https://www.python.org/)
-[![Framework](https://img.shields.io/badge/Framework-Streamlit%20%26%20FastAPI-orange.svg)](https://streamlit.io/)
-[![Libraries](https://img.shields.io/badge/Libraries-Scikit--learn%20%7C%20XGBoost%20%7C%20SHAP-green.svg)](https://scikit-learn.org/)
-
-This project develops a complete machine learning solution to predict whether a customer will subscribe to a term deposit at a bank. The core focus is not only on building an accurate predictive model but also on ensuring its transparency and interpretability through **Explainable AI (XAI)**, culminating in a fully interactive web application for model analysis and real-time prediction.
-
-This project was developed as part of an Independent Study program, aligning with the initial academic proposal.
+An end-to-end project that builds a valid, interpretable Machine Learning model to identify potential customers for a bank's term deposit campaign, complete with deployment prototypes using FastAPI and Streamlit. This project was developed as part of an Independent Study program in collaboration with PT Dicoding Akademi Indonesia.
 
 ---
 
-## 📋 Project Objectives
-
-As outlined in the proposal, the primary goals were:
-1.  **Develop an Accurate Classification Model:** To predict the probability of a customer subscribing to a term deposit.
-2.  **Implement Model Interpretation (XAI):** To provide transparent explanations for the model's predictions, understanding the "why" behind the "what".
-3.  **Design Actionable Insights:** To translate model interpretations into simple, actionable business logic, such as a "Next Best Conversation" strategy for the sales team.
-4.  **Deliver a Usable Solution:** To create a tangible asset that could be used by a collaborator or business partner.
-
----
-
-## 🚀 The Journey: From V1 to a More Robust V2
-
-A key part of this project was an iterative development process, driven by critical analysis and feedback.
-
-### Initial Approach (V1)
-The first version of the model was developed following a standard preprocessing pipeline. While this yielded high performance metrics, a deeper analysis revealed several critical flaws that are common in real-world data science projects.
-
-### Critical Review & Key Learnings
-Based on a thorough review (inspired by feedback from my lecturer), several key issues were identified in the V1 preprocessing:
-
-*   **Data Leakage:** The `duration` feature (call duration) was a major predictor. However, this information is only known *after* a call is made, making it unsuitable for a pre-campaign predictive model. Its inclusion led to an overly optimistic and unrealistic model performance.
-*   **Flawed Feature Engineering:** The `pdays` feature, which indicates days since the last contact, had a special value `999` for new customers. This was incorrectly mapped to `0`, conflating new customers with those contacted on the same day.
-*   **Shallow EDA:** The initial Exploratory Data Analysis lacked bivariate analysis, failing to uncover key relationships between features and the target variable.
-
-### The Improved Approach (V2)
-To address these issues and build a more honest and deployable model, the entire preprocessing and modeling pipeline was rebuilt:
-
-1.  **Eliminated Data Leakage:** The `duration` feature was completely removed to ensure the model is truly predictive.
-2.  **Corrected Feature Engineering:** The `pdays` column was transformed into a new binary feature `pernah_dihubungi` (was_contacted), accurately capturing this crucial piece of information.
-3.  **In-depth EDA:** Bivariate analysis was performed to better understand the data and guide the modeling process.
+## Table of Contents
+* [Project Overview](#project-overview)
+* [Project Objectives](#project-objectives)
+* [Methodology & Workflow](#methodology--workflow)
+* [Tech Stack](#tech-stack)
+* [File Structure](#file-structure)
+* [Setup & Installation](#setup--installation)
+* [How to Use the Prototypes](#how-to-use-the-prototypes)
+* [Deployment Prototypes (API & Dashboard)](#deployment-prototypes-api--dashboard)
+* [Final Model Performance (V2 - Validated)](#final-model-performance-v2---validated)
+* [Key Findings & Business Insights (XAI)](#key-findings--business-insights-xai)
+* [Challenges & Key Learnings](#challenges--key-learnings)
+* [Future Improvements](#future-improvements)
 
 ---
 
-## 🤖 Modeling & Results (V2)
+## Project Overview
 
-With a robust and clean dataset, several models were trained and evaluated. The final goal was to find the model with the best balance between identifying potential customers (**Recall**) and not wasting the sales team's time (**Precision**), as measured by the **F1-Score**.
+In a competitive banking industry, optimizing marketing efforts is crucial. This project addresses this challenge by developing a machine learning model that predicts the likelihood of a customer subscribing to a term deposit.
 
-### Model Comparison (on the corrected V2 dataset)
-
-| Model                 | Accuracy | Precision (for 'Yes') | Recall (for 'Yes') | F1-Score (for 'Yes') |
-| --------------------- | :------: | :-------------------: | :----------------: | :------------------: |
-| Logistic Regression   |  0.8454  |         0.3582        |       0.6401       |        0.4593        |
-| Random Forest         |  0.8936  |         0.5746        |       0.3341       |        0.4223        |
-| XGBoost (Default)     |  0.8904  |         0.5284        |       0.5603       |        0.5439        |
-| **XGBoost (Tuned)**   |  **0.8978**  |         **0.6015**        |       **0.4892**       |        **0.5397**        |
-
-*(Note: These are example scores. Replace them with the final scores from your `02B-Modeling.ipynb` summary table.)*
-
-**Conclusion:** The **Hyperparameter-Tuned XGBoost** model was selected as the final model. Although Random Forest has higher precision, the tuned XGBoost provides a superior balance (F1-Score) and a stronger ability to identify potential leads (Recall), which is crucial for maximizing sales opportunities.
+The primary goal is not just to create an accurate prediction, but to build a **transparent, valid, and interpretable model**. The project journey documents a critical transition from a flawed initial model (V1) to a robust, business-ready final model (V2). To showcase the end-to-end vision, this repository also includes deployment prototypes: a **FastAPI backend** for serving predictions and a **Streamlit dashboard** for interactive analysis.
 
 ---
 
-## 💡 Explainable AI (XAI) with SHAP
+## Project Objectives
 
-To understand the final model's decisions, SHAP (SHapley Additive exPlanations) was implemented.
-
-### Key Feature Importance (V2 Model)
-
-This plot shows the features that have the most impact on the model's predictions, free from data leakage.
-
-*To make this work, save your SHAP bar plot from notebook `02B` into the `reports` folder as `shap_summary_v2.png`*
-![SHAP Summary Plot](reports/shap_summary_v2.png)
-
-**Key Insights:**
-*   **Economic Indicators are Crucial:** Features like `nr.employed` (number of employees) and `euribor3m` (interest rates) are now top predictors, showing that the customer's decision is heavily influenced by the macroeconomic climate.
-*   **Contact History Matters:** The `poutcome_success` feature is highly influential, indicating that customers who have converted in previous campaigns are extremely valuable leads.
-*   **Contact Method:** The `contact_cellular` feature is also significant, suggesting the communication channel plays a role in conversion rates.
+1.  **Develop an Accurate Classification Model:** To predict the probability of a prospect converting based on **pre-call information only**.
+2.  **Implement Model Interpretation:** To provide transparent explanations for the model's predictions using XAI techniques like SHAP.
+3.  **Design Actionable Insights:** To translate model interpretations into simple, actionable insights for the sales team.
+4.  **Prototype a Deployed Solution:** To demonstrate how the final model can be integrated into a real-world application using a REST API and an interactive dashboard.
 
 ---
 
-## 🚀 Going Beyond: The Interactive Dashboard
+## Methodology & Workflow
 
-To fulfill the objective of delivering a usable solution and to demonstrate the project's full potential, I went beyond the core ML role to build a full-stack interactive web application.
+This project followed a rigorous, iterative lifecycle, which was crucial in overcoming initial data challenges.
 
-*To make this work, record a short GIF of you using your Streamlit app and save it in the `reports` folder as `dashboard_demo.gif`*
-![Dashboard Demo](reports/dashboard_demo.gif)
-
-This dashboard, built with **Streamlit** (frontend) and **FastAPI** (backend), allows a user to:
-*   **Compare All Trained Models:** Select any of the four final models (Logistic Regression, Random Forest, XGBoost Default, XGBoost Tuned) from a dropdown menu.
-*   **View Performance Metrics:** Instantly see the Accuracy, Precision, Recall, and F1-Score for the selected model.
-*   **Perform Real-Time Predictions:** Input hypothetical customer data using interactive sliders and see the model's prediction and probability score change in real-time.
-*   **Get Contextual Analysis:** Read a summary of the selected model's strengths and weaknesses.
+1.  **Initial Exploration & Modeling (V1):** The project began with a standard EDA and modeling process, which produced models with deceptively high performance metrics (F1-Score ~0.64).
+2.  **Critical Analysis & Identification of Data Leakage:** A deeper review revealed a critical flaw: the `duration` feature (call duration) was a "leaky" predictor. This made the V1 models invalid for pre-call prediction.
+3.  **Revised Data Analysis (EDA V2):** A completely new, more profound EDA was conducted, which involved removing the leaky feature, performing in-depth bivariate analysis, and executing smart feature engineering.
+4.  **Robust Modeling (V2):** The models were retrained on the valid, non-leaky dataset, with a focus on business-relevant metrics (F1-Score, Precision, Recall).
+5.  **Model Tuning & Interpretation:** The best-performing model (XGBoost V2) was fine-tuned and interpreted with SHAP to extract meaningful business insights.
+6.  **Prototyping & Deployment:** To demonstrate the project's practical application, two prototypes were developed:
+    *   A **FastAPI backend** (`src/main.py`) to serve model predictions via a REST API.
+    *   A **Streamlit frontend** (`app.py`) to create an interactive dashboard for model comparison and real-time prediction.
 
 ---
 
-## 📂 Project Structure
+## Tech Stack
+*   **Data Science:** Pandas, NumPy, Scikit-learn, XGBoost, SHAP
+*   **Data Visualization:** Matplotlib, Seaborn
+*   **Backend API:** FastAPI, Uvicorn
+*   **Frontend Dashboard:** Streamlit
+*   **Environment:** Jupyter Notebooks, Python 3.x
 
+---
+
+## File Structure
+
+```
 ML-LEADSCORINGPREDICTION/
-├── data/
-│ ├── bank-additional-full.csv (Raw Data)
-│ └── bank_cleaned_v2.csv (Cleaned & Processed Data)
-├── models/
-│ ├── models_V1/ (Models with data leakage)
-│ └── models_V2/ (Final, corrected models)
-│ ├── logistic_regression_v2.pkl
-│ ├── random_forest_v2.pkl
-│ ├── xgboost_default_v2.pkl
-│ └── xgboost_tuned_v2.pkl
-├── notebooks/
-│ ├── 01-EDA.ipynb (Initial exploration)
-│ ├── 01B-EDA-Advanced.ipynb (Corrected, in-depth EDA)
-│ ├── 02-Modeling.ipynb (Initial modeling)
-│ └── 02B-Modeling.ipynb (Final, corrected modeling)
-├── reports/ (For storing plots and GIFs)
-├── src/
-│ └── main.py (FastAPI Backend API)
-├── .gitignore
-├── app.py (Streamlit Frontend App)
-├── README.md
-└── requirements.txt
+│
+├── .data/
+│   ├── bank-additional-full.csv      # Raw dataset
+│   └── bank_additional_cleaned_1B.csv  # Final, valid dataset (V2)
+│
+├── .models/
+│   ├── models_V1/                    # Leaky models (archive, not for use)
+│   └── models_V2/                    # Final, valid models for production
+│       └── xgboost_tuned_v2.pkl      # The final, chosen model
+│
+├── .notebooks/
+│   ├── 01B-EDA.ipynb                 # V2: In-depth, revised, and valid EDA
+│   └── 02B-Modeling.ipynb            # V2: Final, robust modeling and interpretation
+│
+├── .reports/
+│   └── shap_summary_plot_v2.png      # SHAP plot for the final model
+│
+├── .src/
+│   └── main.py                       # FastAPI backend logic
+│
+├── app.py                            # Streamlit interactive dashboard
+├── requirements.txt                  # Required Python libraries
+└── README.md                         # This file
+```
 
 ---
 
-## 🛠️ How to Run the Project
+## Setup & Installation
 
-Follow these steps to run the interactive web application locally.
+1.  **Clone the repository:**
+    ```bash
+    git clone https://github.com/your-username/ML-LEADSCORINGPREDICTION.git
+    cd ML-LEADSCORINGPREDICTION
+    ```
+2.  **Create and activate a virtual environment:**
+    ```bash
+    python -m venv venv
+    venv\Scripts\activate  # Windows
+    # source venv/bin/activate  # macOS/Linux
+    ```
+3.  **Install the required packages:**
+    ```bash
+    pip install -r requirements.txt
+    ```
 
-**1. Clone the Repository**
+---
 
-git clone <your-repo-url>
-cd ML-LEADSCORINGPREDICTION
+## How to Use the Prototypes
 
-**2. Create and Activate a Virtual Environment**
-# Create venv
-python -m venv venv
+You can run the backend API and the frontend dashboard independently.
 
-# Activate venv
-# Windows
-venv\Scripts\activate
-# MacOS/Linux
-source venv/bin/activate
+### Running the API (Backend)
+Navigate to the root directory and run the following command:
+```bash
+uvicorn src.main:app --reload
+```
+The API will be available at `http://127.0.0.1:8000/docs` for interactive documentation.
 
-**3. Install Dependencies**
-pip install -r requirements.txt
-
-**4. Run the Backend API (FastAPI)**
-Open a new terminal, navigate to the src directory, and run:
-
-cd src
-uvicorn main:app --reload
-
-The API will be running at http://127.0.0.1:8000. Keep this terminal open.
-
-**5. Run the Frontend Application (Streamlit)**
-Open a second terminal, navigate to the project's root directory, and run:
-
+### Running the Dashboard (Frontend)
+In a new terminal, navigate to the root directory and run:
+```bash
 streamlit run app.py
+```
+The interactive dashboard will open in your browser.
 
-A new tab will open in your browser with the interactive dashboard at http://localhost:8501.
+---
 
-💻 Technologies Used
-Programming Language: Python
-Data Analysis: Pandas, NumPy
-Data Visualization: Matplotlib, Seaborn
-Machine Learning: Scikit-learn, XGBoost
-Model Interpretation: SHAP
-Backend API: FastAPI, Uvicorn
-Frontend Web App: Streamlit
-Development: Jupyter Notebook, VS Code
+## Deployment Prototypes (API & Dashboard)
+
+This project includes two functional prototypes to demonstrate how the ML model can be deployed.
+
+*   **FastAPI Backend:** Provides a REST API endpoint (`/predict`) that can be called by other services to get predictions in a structured JSON format.
+*   **Streamlit Dashboard:** An interactive web application that allows users to select a model, input customer data via sliders, and see the prediction in real-time.
+
+> **IMPORTANT NOTE:** The current versions of `app.py` and `src/main.py` are **proof-of-concept prototypes** built using the initial **V1 models**. They still include the flawed `duration` feature as an input. This was done to quickly build the application structure. To make them production-ready, they **must be refactored** to:
+> 1.  Load the final `xgboost_tuned_v2.pkl` model.
+> 2.  Remove `duration` from the input fields and API schema.
+> 3.  Incorporate the preprocessing steps from the `01B-EDA.ipynb` notebook (e.g., creating the `pernah_dihubungi` feature) within the application logic before making a prediction.
+
+---
+
+## From Flawed V1 to Validated V2: A Project Journey
+
+The journey from the initial models (V1) to the final, validated models (V2) is the most critical story of this project. The V1 models, while appearing powerful on the surface, were built on a flawed foundation. V2 represents a robust, methodologically sound solution that is ready for real-world application.
+
+### Complete Model Performance Comparison
+
+The table below presents the performance metrics for all models developed during this project. It clearly illustrates the deceptive performance of the V1 models (due to data leakage) versus the realistic performance of the valid V2 models.
+
+| Version | Model | Accuracy | Precision (Yes) | Recall (Yes) | F1-Score (Yes) |
+| :---: | :--- | :---: | :---: | :---: | :---: |
+| **V1 (Flawed)** | Logistic Regression | 0.8640 | 0.4500 | **0.9100** | 0.6000 |
+| **V1 (Flawed)** | Random Forest | **0.9148** | **0.6900** | 0.4400 | 0.5400 |
+| **V1 (Flawed)** | XGBoost (Tuned) | 0.8886 | 0.5000 | 0.8800 | **0.6400** |
+| --- | --- | --- | --- | --- | --- |
+| **V2 (Valid)** | Logistic Regression | 0.8309 | 0.3602 | 0.6455 | 0.4624 |
+| **V2 (Valid)** | Random Forest | 0.8935 | 0.5537 | 0.2834 | 0.3749 |
+| **V2 (Valid)** | XGBoost (Default) | 0.8451 | 0.3816 | 0.6045 | 0.4679 |
+| **V2 (Valid)** | **XGBoost (Tuned)** | **0.8537** | **0.4064** | **0.6476** | **0.4994** |
+
+### Why V2 is Superior: EDA and Modeling Improvements
+
+The V2 iteration is fundamentally better because it addresses critical flaws discovered in the V1 process. The improvements were made across both the analysis and modeling phases.
+
+#### **1. Improvements in Exploratory Data Analysis (EDA)**
+
+*   **Data Leakage Elimination:** The single most important improvement was the **removal of the `duration` feature**. V1 used call duration as a predictor, which is information only available *after* a call is finished. This "leaked" information from the future into the model, making its predictions invalid for pre-call targeting. V2 was built exclusively on pre-call information, ensuring its real-world validity.
+*   **From Surface-Level to Deep Analysis:** EDA V1 was limited to basic, univariate analysis. EDA V2 implemented **rich bivariate analysis**, using visualizations to explore the relationship between each feature and the campaign's outcome. This generated crucial business hypotheses *before* modeling even began.
+*   **Intelligent Feature Engineering:** The ambiguous `pdays` column (where `999` meant "not previously contacted") was incorrectly handled in V1. In V2, it was transformed into a clear, informative binary feature called `pernah_dihubungi` (was_contacted), which proved to be a significant predictor.
+
+#### **2. Improvements in Modeling & Evaluation**
+
+*   **Honest and Realistic Performance:** The V1 models showed inflated metrics because they were "cheating" with the leaky `duration` feature. The V2 models, trained on a valid dataset, show **honest and reliable performance metrics**. A lower but truthful F1-Score of ~0.50 is infinitely more valuable to a business than a deceptive score of 0.64 that cannot be replicated.
+*   **Meaningful Interpretability (XAI):** The SHAP analysis on V1 was useless, as it was completely dominated by the `duration` feature. The SHAP analysis on V2, however, reveals the **true drivers of customer conversion**, such as macroeconomic conditions (`nr.employed`), contact methods (`contact_telephone`), and past campaign outcomes (`poutcome_success`). This provides actionable insights, fulfilling a core objective of the proposal.
+
+### Why XGBoost (Tuned) V2 is the Final Choice
+
+Among the valid V2 models, the **Tuned XGBoost model** was definitively selected for three key reasons:
+
+1.  **Best Performance on the Right Metric:** It achieved the **highest F1-Score (0.4994)**. For this business problem, the F1-Score is the most crucial metric as it measures the harmonic balance between Precision (not wasting the sales team's time) and Recall (not missing out on potential customers).
+2.  **Proven Interpretability:** We successfully applied SHAP to this model, generating clear, actionable insights that directly address the "Explainable AI" goal of the project. We know not only *what* it predicts, but *why*.
+3.  **Robustness and Industry Standard:** XGBoost is a powerful and widely-used algorithm in the industry, known for its performance and efficiency. This makes it a reliable and scalable choice for a production environment.
+
+## Final Model Performance (V2 - Validated)
+
+The following table summarizes the performance of the **final, valid models (V2)**. These metrics are realistic and reflect the model's true pre-campaign predictive power.
+
+| Model | Accuracy | Precision (Yes) | Recall (Yes) | F1-Score (Yes) |
+| :--- | :---: | :---: | :---: | :---: |
+| **XGBoost (Tuned)** | **0.8537** | **0.4064** | **0.6476** | **0.4994** |
+
+The **Tuned XGBoost model (V2)** was selected as the final model due to its superior **F1-Score**, representing the best balance between business objectives.
+
+---
