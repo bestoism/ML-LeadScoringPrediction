@@ -8,13 +8,18 @@ import numpy as np
 # --- 1. Inisialisasi Aplikasi ---
 app = FastAPI(title="API Prediksi Lead Scoring V2 (VALIDATED)", version="2.0.0")
 
-# --- 2. FUNGSI UNTUK MEMUAT SEMUA MODEL V2 ---
+# --- 2. FUNGSI UNTUK MEMUAT SEMUA MODEL V2 (DENGAN PATH YANG DIPERBAIKI) ---
 def load_all_models_v2():
     """Memuat semua model V2 yang valid ke dalam dictionary."""
     models = {}
-    model_dir = os.path.join('..', 'models', 'models_V2') # Path yang benar
     
-    # Pastikan nama file ini sesuai dengan yang ada di folder models_V2 Anda
+    # --- PERBAIKAN PATH DI SINI ---
+    # Dapatkan direktori tempat script ini berada (yaitu, folder 'src')
+    script_dir = os.path.dirname(__file__)
+    # Buat path absolut ke folder models_V2
+    model_dir = os.path.abspath(os.path.join(script_dir, '..', 'models', 'models_V2'))
+    # --- AKHIR PERBAIKAN ---
+
     model_files = {
         "Logistic Regression V2": "logistic_regression_v2.pkl",
         "Random Forest V2": "random_forest_v2.pkl",
