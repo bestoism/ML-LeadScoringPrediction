@@ -1,5 +1,8 @@
 # Predictive Lead Scoring for Term Deposit Subscriptions: End-to-End
 
+<img width="1917" height="860" alt="image" src="https://github.com/user-attachments/assets/bfadd981-c35e-4049-b00f-0f21c11499a7" />
+
+
 An end-to-end project that builds a valid, interpretable Machine Learning model to identify potential customers for a bank's term deposit campaign, complete with deployment prototypes using FastAPI and Streamlit. This project was developed as part of an Independent Study program in collaboration with PT Dicoding Akademi Indonesia.
 
 ---
